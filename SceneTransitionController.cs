@@ -1,124 +1,123 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
-using Klak.Spout; // Use the correct namespace for SpoutSender
+using System.Collections.Generic;
+using Klak.Spout;
 
 public class SceneTransitionController : MonoBehaviour
 {
-    private SpoutSender spoutBack;
-    private SpoutSender spoutAngle;
-    private SpoutSender spoutGroundAngle;
-    private SpoutSender spoutGround;
-    private SpoutSender spoutRight;
-    private SpoutSender spoutLeft;
-    private bool isPaused = false;
+    public static SceneTransitionController Instance { get; private set; }
+    public List<SpoutSender> spoutSenders = new List<SpoutSender>();
     private Coroutine sceneLoopCoroutine;
+
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+
+            // Ensures all SpoutSenders are not destroyed on load
+            foreach (var sender in spoutSenders)
+            {
+                DontDestroyOnLoad(sender.gameObject);
+            }
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+    }
 
     void Start()
     {
-        // Prevent this GameObject from being destroyed when loading a new scene
-        DontDestroyOnLoad(this.gameObject);
+        Application.targetFrameRate = 60; // Ensure stable frame rate
+        Debug.Log("SceneTransitionController started on " + gameObject.name);
 
-        // Update Spout Senders for the initial scene
+        if (spoutSenders == null || spoutSenders.Count == 0)
+        {
+            Debug.LogError("No SpoutSenders assigned in the Inspector");
+            return;
+        }
+
         UpdateSpoutSenders();
-
-        // Start the scene transitions coroutine
         sceneLoopCoroutine = StartCoroutine(SceneLoop());
     }
 
-    void Update()
+    void UpdateSpoutSenders()
     {
-        // Toggle pause/resume when the spacebar is pressed
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (spoutSenders == null || spoutSenders.Count == 0)
         {
-            if (isPaused)
+            Debug.LogError("No SpoutSenders to update");
+            return;
+        }
+
+        for (int i = 0; i < spoutSenders.Count; i++)
+        {
+            var spoutSender = spoutSenders[i];
+            if (spoutSender != null)
             {
-                Resume();
+                Debug.Log("Updating Spout Sender: " + spoutSender.name);
+                spoutSender.PublicUpdate();  // Call the public method
+                Debug.Log("Spout Sender Updated: " + spoutSender.name);
             }
             else
             {
-                Pause();
+                Debug.LogError("SpoutSender at index " + i + " is null, attempting to reassign.");
+
+                // Attempt to reassign the SpoutSender
+                string senderName = GetSpoutSenderName(i);
+                spoutSenders[i] = GameObject.Find(senderName)?.GetComponent<SpoutSender>();
+                if (spoutSenders[i] != null)
+                {
+                    DontDestroyOnLoad(spoutSenders[i].gameObject);
+                    Debug.Log("Successfully reassigned SpoutSender: " + spoutSenders[i].name);
+                }
+                else
+                {
+                    Debug.LogError("Failed to reassign SpoutSender at index " + i);
+                }
             }
         }
     }
 
-    private void UpdateSpoutSenders()
+    string GetSpoutSenderName(int index)
     {
-        // Find and update all Spout Senders in the current scene
-        spoutBack = GameObject.Find("SpoutBack")?.GetComponent<SpoutSender>();
-        spoutAngle = GameObject.Find("SpoutAngle")?.GetComponent<SpoutSender>();
-        spoutGroundAngle = GameObject.Find("SpoutGroundAngle")?.GetComponent<SpoutSender>();
-        spoutGround = GameObject.Find("SpoutGround")?.GetComponent<SpoutSender>();
-        spoutRight = GameObject.Find("SpoutRight")?.GetComponent<SpoutSender>();
-        spoutLeft = GameObject.Find("SpoutLeft")?.GetComponent<SpoutSender>();
+        switch (index)
+        {
+            case 0: return "SpoutBack";
+            case 1: return "SpoutAngle";
+            case 2: return "SpoutGroundAngle";
+            case 3: return "SpoutGround";
+            case 4: return "SpoutRight";
+            case 5: return "SpoutLeft";
+            default: return null;
+        }
     }
 
     private IEnumerator SceneLoop()
     {
-        // Loop forever
         while (true)
         {
-            yield return new WaitForSeconds(5);  // Scene01 duration
-            SceneManager.LoadScene("Scene02");
-            yield return null; // Wait for the scene to load
-            UpdateSpoutSenders();
-
-            yield return new WaitForSeconds(3);  // Scene02 duration
-            SceneManager.LoadScene("Scene03");
-            yield return null;
-            UpdateSpoutSenders();
-
-            yield return new WaitForSeconds(15); // Scene03 duration
-            SceneManager.LoadScene("Scene04");
-            yield return null;
-            UpdateSpoutSenders();
-
-            yield return new WaitForSeconds(3);  // Scene04 duration
-            SceneManager.LoadScene("Scene05");
-            yield return null;
-            UpdateSpoutSenders();
-
-            yield return new WaitForSeconds(15); // Scene05 duration
-            SceneManager.LoadScene("Scene06");
-            yield return null;
-            UpdateSpoutSenders();
-
-            yield return new WaitForSeconds(3);  // Scene06 duration
-            SceneManager.LoadScene("Scene07");
-            yield return null;
-            UpdateSpoutSenders();
-
-            yield return new WaitForSeconds(15); // Scene07 duration
-            SceneManager.LoadScene("Scene08");
-            yield return null;
-            UpdateSpoutSenders();
-
-            yield return new WaitForSeconds(3);  // Scene08 duration
-            SceneManager.LoadScene("Scene09");
-            yield return null;
-            UpdateSpoutSenders();
-
-            yield return new WaitForSeconds(15); // Scene09 duration
-            SceneManager.LoadScene("Scene01");  // Loop back to Scene01
-            yield return null;
-            UpdateSpoutSenders();
+            yield return TransitionToScene("Scene02", 5);
+            yield return TransitionToScene("Scene03", 3);
+            yield return TransitionToScene("Scene04", 15);
+            yield return TransitionToScene("Scene05", 3);
+            yield return TransitionToScene("Scene06", 15);
+            yield return TransitionToScene("Scene07", 3);
+            yield return TransitionToScene("Scene08", 15);
+            yield return TransitionToScene("Scene09", 3);
+            yield return TransitionToScene("Scene01", 15);
         }
     }
 
-    private void Pause()
+    private IEnumerator TransitionToScene(string sceneName, float waitTime)
     {
-        isPaused = true;
-        Time.timeScale = 0f;
-        if (sceneLoopCoroutine != null)
-        {
-            StopCoroutine(sceneLoopCoroutine);
-        }
-    }
-
-    private void Resume()
-    {
-        isPaused = false;
-        Time.timeScale = 1f;
-        sceneLoopCoroutine = StartCoroutine(SceneLoop());
+        Debug.Log("Transitioning to " + sceneName);
+        yield return new WaitForSeconds(waitTime);
+        SceneManager.LoadScene(sceneName);
+        yield return new WaitForSeconds(1);  // Give some time for the scene to load
+        UpdateSpoutSenders();
     }
 }
