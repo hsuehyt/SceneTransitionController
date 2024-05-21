@@ -2,12 +2,28 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using Klak.Spout;
+
+[System.Serializable]
+public class SceneTransition
+{
+    [Tooltip("The scene to transition to. Only scenes added to the build settings can be selected.")]
+    public SceneAsset scene; // Use SceneAsset to allow scene selection
+
+    [Tooltip("The duration (in seconds) to display the scene before transitioning.")]
+    public float duration; // Duration in seconds
+}
 
 public class SceneTransitionController : MonoBehaviour
 {
     public static SceneTransitionController Instance { get; private set; }
+
     public List<SpoutSender> spoutSenders = new List<SpoutSender>();
+
+    [Tooltip("List of scene transitions with respective durations (in seconds).")]
+    public List<SceneTransition> sceneTransitions = new List<SceneTransition>();
+
     private Coroutine sceneLoopCoroutine;
 
     void Awake()
@@ -59,15 +75,17 @@ public class SceneTransitionController : MonoBehaviour
     {
         while (true)
         {
-            yield return TransitionToScene("Scene02", 5);
-            yield return TransitionToScene("Scene03", 3);
-            yield return TransitionToScene("Scene04", 15);
-            yield return TransitionToScene("Scene05", 3);
-            yield return TransitionToScene("Scene06", 15);
-            yield return TransitionToScene("Scene07", 3);
-            yield return TransitionToScene("Scene08", 15);
-            yield return TransitionToScene("Scene09", 3);
-            yield return TransitionToScene("Scene01", 15);
+            foreach (var transition in sceneTransitions)
+            {
+                if (transition.scene != null)
+                {
+                    yield return TransitionToScene(transition.scene.name, transition.duration);
+                }
+                else
+                {
+                    Debug.LogError("Scene not assigned in SceneTransition.");
+                }
+            }
         }
     }
 

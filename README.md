@@ -1,53 +1,41 @@
 # SceneTransitionController
 
-## Overview
-
-The `SceneTransitionController` script automates the transition between multiple scenes in Unity, ensuring seamless visual output updates through SpoutSenders. It also provides functionality to pause and resume the scene transitions.
+The `SceneTransitionController` script manages the automatic transitioning between multiple scenes and ensures that specific Spout Senders are updated and maintained across these transitions. This script is useful for applications that require continuous scene changes, such as multimedia installations or presentations.
 
 ## Features
+- **Scene Transitions**: Automatically transitions between specified scenes after a set duration.
+- **Spout Senders Management**: Ensures that specific Spout Sender objects are maintained across scene transitions.
+- **Customizable**: Scene transitions and durations can be configured via the Unity Inspector.
 
-- Automated transitions between nine scenes.
-- Configurable scene durations.
-- Integration with SpoutSenders to update visual outputs.
-- Pause and resume functionality using the spacebar.
+## Setup
 
-## Requirements
+1. **Script Placement**:
+   - Place `SceneTransitionController.cs` in your project's scripts folder.
+   - Ensure the `SceneTransitionDrawer` class is in the same folder or a related scripts folder for custom property handling.
 
-- Unity 2021.1 or later
-- Klak.Spout package for SpoutSender functionality
+2. **Add to GameObject**:
+   - Attach the `SceneTransitionController` script to a GameObject in your scene (e.g., `acrossScene`).
 
-## Installation
+3. **Configure Spout Senders**:
+   - In the Inspector, add your Spout Senders to the `Spout Senders` list. The expected Spout Senders are `SpoutBack`, `SpoutAngle`, `SpoutGroundAngle`, `SpoutGround`, `SpoutRight`, and `SpoutLeft`.
 
-1. Clone or download the repository.
-2. Open the project in Unity.
-3. Ensure the Klak.Spout package is installed in your project.
+4. **Configure Scene Transitions**:
+   - In the Inspector, add your scene transitions to the `Scene Transitions` list. Specify the scene and the duration (in seconds) for each transition.
 
-## Usage
+## Example Usage
 
-1. Attach the `SceneTransitionController` script to an empty GameObject in your initial scene (Scene01).
-2. Ensure that all scenes (`Scene01` to `Scene09`) are added to the build settings.
-3. Run the project.
+1. **Scene Transition Configuration**:
+   - Select the GameObject with the `SceneTransitionController` component.
+   - In the `Scene Transitions` list, add elements for each scene you want to transition to. Specify the `SceneAsset` and `Duration` for each element.
+   - Example:
+     - Element 0: Scene `Scene01`, Duration `5` seconds
+     - Element 1: Scene `Scene02`, Duration `3` seconds
+     - Element 2: Scene `Scene03`, Duration `15` seconds
 
-## Script Details
+2. **Run the Scene**:
+   - Play the scene in the Unity Editor. The script will automatically transition between the configured scenes based on the specified durations.
 
-- **Start Method:** Initializes the scene transition loop and updates SpoutSenders for the initial scene.
-- **Update Method:** Listens for the spacebar press to toggle pause and resume.
-- **SceneLoop Coroutine:** Manages the timed transitions between scenes and updates SpoutSenders.
-- **Pause Method:** Pauses the scene transitions and stops the coroutine.
-- **Resume Method:** Resumes the scene transitions and restarts the coroutine.
+## Notes
 
-## Scene Durations
-
-- **Scene01:** 5 seconds
-- **Scene02:** 3 seconds
-- **Scene03:** 15 seconds
-- **Scene04:** 3 seconds
-- **Scene05:** 15 seconds
-- **Scene06:** 3 seconds
-- **Scene07:** 15 seconds
-- **Scene08:** 3 seconds
-- **Scene09:** 15 seconds
-
-## Controls
-
-- **Spacebar:** Pause and resume scene transitions.
+- Ensure that all scenes referenced in the `Scene Transitions` list are added to the build settings.
+- The Spout Sender objects must exist in the scenes and have the correct names for the script to find and assign them properly.
