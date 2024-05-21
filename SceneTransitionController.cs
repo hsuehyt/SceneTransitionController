@@ -16,12 +16,6 @@ public class SceneTransitionController : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-
-            // Ensures all SpoutSenders are not destroyed on load
-            foreach (var sender in spoutSenders)
-            {
-                DontDestroyOnLoad(sender.gameObject);
-            }
         }
         else
         {
@@ -35,64 +29,29 @@ public class SceneTransitionController : MonoBehaviour
         Application.targetFrameRate = 60; // Ensure stable frame rate
         Debug.Log("SceneTransitionController started on " + gameObject.name);
 
-        if (spoutSenders == null || spoutSenders.Count == 0)
-        {
-            Debug.LogError("No SpoutSenders assigned in the Inspector");
-            return;
-        }
-
         UpdateSpoutSenders();
         sceneLoopCoroutine = StartCoroutine(SceneLoop());
     }
 
     void UpdateSpoutSenders()
     {
-        if (spoutSenders == null || spoutSenders.Count == 0)
-        {
-            Debug.LogError("No SpoutSenders to update");
-            return;
-        }
+        string[] spoutSenderNames = new string[] { "SpoutBack", "SpoutAngle", "SpoutGroundAngle", "SpoutGround", "SpoutRight", "SpoutLeft" };
 
-        for (int i = 0; i < spoutSenders.Count; i++)
+        spoutSenders.Clear();
+
+        foreach (string name in spoutSenderNames)
         {
-            var spoutSender = spoutSenders[i];
-            if (spoutSender != null)
+            SpoutSender sender = GameObject.Find(name)?.GetComponent<SpoutSender>();
+            if (sender != null)
             {
-                Debug.Log("Updating Spout Sender: " + spoutSender.name);
-                spoutSender.PublicUpdate();  // Call the public method
-                Debug.Log("Spout Sender Updated: " + spoutSender.name);
+                spoutSenders.Add(sender);
+                DontDestroyOnLoad(sender.gameObject);
+                Debug.Log("Found and assigned SpoutSender: " + name);
             }
             else
             {
-                Debug.LogError("SpoutSender at index " + i + " is null, attempting to reassign.");
-
-                // Attempt to reassign the SpoutSender
-                string senderName = GetSpoutSenderName(i);
-                spoutSenders[i] = GameObject.Find(senderName)?.GetComponent<SpoutSender>();
-                if (spoutSenders[i] != null)
-                {
-                    DontDestroyOnLoad(spoutSenders[i].gameObject);
-                    Debug.Log("Successfully reassigned SpoutSender: " + spoutSenders[i].name);
-                }
-                else
-                {
-                    Debug.LogError("Failed to reassign SpoutSender at index " + i);
-                }
+                Debug.LogError("SpoutSender not found: " + name);
             }
-        }
-    }
-
-    string GetSpoutSenderName(int index)
-    {
-        switch (index)
-        {
-            case 0: return "SpoutBack";
-            case 1: return "SpoutAngle";
-            case 2: return "SpoutGroundAngle";
-            case 3: return "SpoutGround";
-            case 4: return "SpoutRight";
-            case 5: return "SpoutLeft";
-            default: return null;
         }
     }
 
