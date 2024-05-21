@@ -42,7 +42,7 @@ public class SceneTransitionController : MonoBehaviour
 
     void Start()
     {
-        Application.targetFrameRate = 60; // Ensure stable frame rate
+        Application.targetFrameRate = 24; // Set frame rate to 24 fps
         Debug.Log("SceneTransitionController started on " + gameObject.name);
 
         UpdateSpoutSenders();
