@@ -79,7 +79,7 @@ public class SceneTransitionController : MonoBehaviour
             {
                 if (transition.scene != null)
                 {
-                    yield return TransitionToScene(transition.scene.name, transition.duration);
+                    yield return StartCoroutine(TransitionToScene(transition.scene.name, transition.duration));
                 }
                 else
                 {
@@ -92,9 +92,9 @@ public class SceneTransitionController : MonoBehaviour
     private IEnumerator TransitionToScene(string sceneName, float waitTime)
     {
         Debug.Log("Transitioning to " + sceneName);
-        yield return new WaitForSeconds(waitTime);
         SceneManager.LoadScene(sceneName);
         yield return new WaitForSeconds(1);  // Give some time for the scene to load
         UpdateSpoutSenders();
+        yield return new WaitForSeconds(waitTime);
     }
 }
