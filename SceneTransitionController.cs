@@ -2,14 +2,13 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using Klak.Spout;
 
 [System.Serializable]
 public class SceneTransition
 {
-    [Tooltip("The scene to transition to. Only scenes added to the build settings can be selected.")]
-    public SceneAsset scene; // Use SceneAsset to allow scene selection
+    [Tooltip("The name of the scene to transition to. Make sure the scene is added to the build settings.")]
+    public string sceneName; // Use string to store scene name
 
     [Tooltip("The duration (in seconds) to display the scene before transitioning.")]
     public float duration; // Duration in seconds
@@ -77,13 +76,13 @@ public class SceneTransitionController : MonoBehaviour
         {
             foreach (var transition in sceneTransitions)
             {
-                if (transition.scene != null)
+                if (!string.IsNullOrEmpty(transition.sceneName))
                 {
-                    yield return StartCoroutine(TransitionToScene(transition.scene.name, transition.duration));
+                    yield return StartCoroutine(TransitionToScene(transition.sceneName, transition.duration));
                 }
                 else
                 {
-                    Debug.LogError("Scene not assigned in SceneTransition.");
+                    Debug.LogError("Scene name not assigned in SceneTransition.");
                 }
             }
         }
